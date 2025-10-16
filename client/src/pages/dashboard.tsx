@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Search, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ClientCard } from "@/components/client-card";
 import { AddClientDialog } from "@/components/add-client-dialog";
@@ -10,12 +11,38 @@ import { StatsSummary } from "@/components/stats-summary";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Client } from "@shared/schema";
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const clientsUrl = debouncedSearch 
+    ? `/api/clients?search=${encodeURIComponent(debouncedSearch)}`
+    : "/api/clients";
 
   const { data: clients, isLoading } = useQuery<Client[]>({
-    queryKey: ["/api/clients"],
+    queryKey: [clientsUrl],
   });
+
+  const handleExport = () => {
+    window.location.href = "/api/export";
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,6 +91,24 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-8">
             <StatsSummary />
+            
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search clients by name, phone, or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Button variant="outline" onClick={handleExport}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
+            
             <div className="space-y-6">
               {clients.map((client) => (
                 <ClientCard key={client.id} client={client} />

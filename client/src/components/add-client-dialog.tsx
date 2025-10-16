@@ -36,6 +36,8 @@ export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
     defaultValues: {
       name: "",
       monthlyAmount: 0,
+      phone: "",
+      email: "",
     },
   });
 
@@ -101,7 +103,7 @@ export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
               name="monthlyAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monthly Amount ($)</FormLabel>
+                  <FormLabel>Monthly Amount (MWK)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -110,6 +112,44 @@ export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
                       data-testid="input-monthly-amount"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="+265 123 456 789"
+                      data-testid="input-phone"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="client@example.com"
+                      data-testid="input-email"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

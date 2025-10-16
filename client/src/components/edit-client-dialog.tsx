@@ -38,6 +38,8 @@ export function EditClientDialog({ client, open, onOpenChange }: EditClientDialo
     defaultValues: {
       name: client.name,
       monthlyAmount: client.monthlyAmount,
+      phone: client.phone || "",
+      email: client.email || "",
     },
   });
 
@@ -46,6 +48,8 @@ export function EditClientDialog({ client, open, onOpenChange }: EditClientDialo
       form.reset({
         name: client.name,
         monthlyAmount: client.monthlyAmount,
+        phone: client.phone || "",
+        email: client.email || "",
       });
     }
   }, [open, client, form]);
@@ -111,7 +115,7 @@ export function EditClientDialog({ client, open, onOpenChange }: EditClientDialo
               name="monthlyAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monthly Amount ($)</FormLabel>
+                  <FormLabel>Monthly Amount (MWK)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -120,6 +124,44 @@ export function EditClientDialog({ client, open, onOpenChange }: EditClientDialo
                       data-testid={`input-edit-amount-${client.id}`}
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="+265 123 456 789"
+                      data-testid={`input-edit-phone-${client.id}`}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="client@example.com"
+                      data-testid={`input-edit-email-${client.id}`}
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

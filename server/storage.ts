@@ -3,7 +3,7 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
-  getClients(): Promise<Client[]>;
+  getClients(search?: string): Promise<Client[]>;
   getClient(id: string): Promise<Client | undefined>;
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: string, client: InsertClient): Promise<Client | undefined>;
@@ -12,13 +12,26 @@ export interface IStorage {
   getPaymentsByClient(clientId: string): Promise<Payment[]>;
   getPayment(clientId: string, month: number, year: number): Promise<Payment | undefined>;
   createPayment(payment: InsertPayment): Promise<Payment>;
-  updatePayment(id: string, paid: boolean): Promise<Payment | undefined>;
+  updatePayment(id: string, paid: boolean, notes?: string): Promise<Payment | undefined>;
   deletePaymentsByClient(clientId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getClients(): Promise<Client[]> {
-    return await db.select().from(clients);
+  async getClients(search?: string): Promise<Client[]> {
+    if (!search) {
+      return await db.select().from(clients);
+    }
+    
+    const { ilike, or } = await import("drizzle-orm");
+    const searchPattern = `%${search}%`;
+    
+    return await db.select().from(clients).where(
+      or(
+        ilike(clients.name, searchPattern),
+        ilike(clients.phone, searchPattern),
+        ilike(clients.email, searchPattern)
+      )
+    );
   }
 
   async getClient(id: string): Promise<Client | undefined> {
@@ -73,10 +86,15 @@ export class DatabaseStorage implements IStorage {
     return payment;
   }
 
-  async updatePayment(id: string, paid: boolean): Promise<Payment | undefined> {
+  async updatePayment(id: string, paid: boolean, notes?: string): Promise<Payment | undefined> {
+    const updateData: any = { paid };
+    if (notes !== undefined) {
+      updateData.notes = notes;
+    }
+    
     const [payment] = await db
       .update(payments)
-      .set({ paid })
+      .set(updateData)
       .where(eq(payments.id, id))
       .returning();
     return payment || undefined;

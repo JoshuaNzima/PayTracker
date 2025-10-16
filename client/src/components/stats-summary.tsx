@@ -8,6 +8,7 @@ interface StatsData {
   totalExpected: number;
   totalPaid: number;
   outstanding: number;
+  overdueCount: number;
 }
 
 export function StatsSummary() {
@@ -37,9 +38,9 @@ export function StatsSummary() {
   if (!stats) return null;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-MW', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'MWK',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -98,15 +99,15 @@ export function StatsSummary() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-          <AlertCircle className="h-4 w-4 text-chart-3" />
+          <CardTitle className="text-sm font-medium">Overdue Payments</CardTitle>
+          <AlertCircle className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold tabular-nums text-chart-3" data-testid="stat-outstanding">
-            {formatCurrency(stats.outstanding)}
+          <div className="text-2xl font-bold tabular-nums text-destructive" data-testid="stat-overdue">
+            {stats.overdueCount}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Pending payments
+            {formatCurrency(stats.outstanding)} outstanding
           </p>
         </CardContent>
       </Card>
