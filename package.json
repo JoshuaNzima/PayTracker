@@ -5,11 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "npm ci && tsc && cp server/seed.js dist/seed.js",
     "start": "NODE_ENV=production node dist/index.js",
-    "check": "tsc",
-    "vercel-build": "prisma generate && prisma migrate deploy && npm run build",
-    "postinstall": "prisma generate"
+    "check": "tsc"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
