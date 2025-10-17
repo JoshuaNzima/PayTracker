@@ -19,11 +19,7 @@ COPY . .
 # Use `npm ci` when a package-lock.json exists for reproducible installs,
 # otherwise fall back to `npm install` so the build doesn't fail when lockfile
 # is not present (some repos don't include lockfiles).
-RUN if [ -f package-lock.json ]; then \
-			npm ci --no-audit --no-fund; \
-		else \
-			npm install --no-audit --no-fund; \
-		fi
+RUN npm install --no-audit --no-fund --legacy-peer-deps
 
 # Build the client with Vite (outputs to dist/public per vite.config.ts)
 RUN npx vite build --mode production
