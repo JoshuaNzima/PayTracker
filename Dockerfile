@@ -20,8 +20,11 @@ COPY . .
 # though the image default is production.
 RUN NODE_ENV=development npm install --no-audit --no-fund --legacy-peer-deps
 
+
 # Build the client with Vite (outputs to dist/public per vite.config.ts)
-RUN npx vite build --mode production
+RUN npx vite build --mode production \
+	&& rm -rf server/public \
+	&& mv dist/public server/public
 
 # Reset NODE_ENV to production for runtime
 ENV NODE_ENV=production
