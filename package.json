@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "npm ci && tsc && cp server/seed.js dist/seed.js",
-    "start": "NODE_ENV=production node dist/index.js",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate",
+    "start": "npx drizzle-kit migrate && NODE_ENV=production node dist/index.js",
     "check": "tsc"
   },
   "dependencies": {
