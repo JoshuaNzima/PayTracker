@@ -15,14 +15,16 @@ COPY tsconfig.json vite.config.ts ./
 # Copy the rest of the repository
 COPY . .
 
-# Install dependencies (including dev deps because we run Vite/tsx at runtime)
-# Use `npm ci` when a package-lock.json exists for reproducible installs,
-# otherwise fall back to `npm install` so the build doesn't fail when lockfile
-# is not present (some repos don't include lockfiles).
-RUN npm install --no-audit --no-fund --legacy-peer-deps
+# Install dependencies (force devDependencies installation so build tools like vite/tsx are available)
+# We temporarily set NODE_ENV=development for this RUN to ensure devDependencies are installed even
+# though the image default is production.
+RUN NODE_ENV=development npm install --no-audit --no-fund --legacy-peer-deps
 
 # Build the client with Vite (outputs to dist/public per vite.config.ts)
 RUN npx vite build --mode production
+
+# Reset NODE_ENV to production for runtime
+ENV NODE_ENV=production
 
 # Expose the port the server listens on
 EXPOSE 5000
