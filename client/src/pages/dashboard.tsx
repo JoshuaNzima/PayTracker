@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Download, Upload } from "lucide-react";
+import { Plus, Search, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ClientCard } from "@/components/client-card";
 import { AddClientDialog } from "@/components/add-client-dialog";
-import { ImportClientsDialog } from "@/components/import-clients-dialog";
 import { EmptyState } from "@/components/empty-state";
 import { StatsSummary } from "@/components/stats-summary";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,7 +29,6 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -105,10 +103,6 @@ export default function Dashboard() {
                   className="pl-9"
                 />
               </div>
-              <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-                <Upload className="h-4 w-4 mr-2" />
-                Import Excel
-              </Button>
               <Button variant="outline" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Export CSV
@@ -127,11 +121,6 @@ export default function Dashboard() {
       <AddClientDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-      />
-
-      <ImportClientsDialog
-        open={showImportDialog}
-        onOpenChange={setShowImportDialog}
       />
     </div>
   );
