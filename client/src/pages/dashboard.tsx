@@ -31,14 +31,30 @@ export default function Dashboard() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const [monthFilter, setMonthFilter] = useState<number | "any">(new Date().getMonth());
+  const [yearFilter, setYearFilter] = useState<number>(new Date().getFullYear());
+  const [paidFilter, setPaidFilter] = useState<"any" | "paid" | "unpaid">("any");
+  const [outstandingOnly, setOutstandingOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-  const clientsUrl = debouncedSearch 
-    ? `/api/clients?search=${encodeURIComponent(debouncedSearch)}`
-    : "/api/clients";
+  const queryParams = new URLSearchParams();
+  if (debouncedSearch) queryParams.set("search", debouncedSearch);
+  if (monthFilter !== "any") queryParams.set("month", String(monthFilter));
+  if (yearFilter) queryParams.set("year", String(yearFilter));
+  if (paidFilter && paidFilter !== "any") queryParams.set("paid", paidFilter);
+  if (outstandingOnly) queryParams.set("outstandingMin", String(500000));
+  if (page && page > 1) queryParams.set("page", String(page));
+  if (pageSize) queryParams.set("pageSize", String(pageSize));
 
-  const { data: clients, isLoading } = useQuery<Client[]>({
+  const clientsUrl = "/api/clients" + (Array.from(queryParams).length ? `?${queryParams.toString()}` : "");
+
+  const { data, isLoading } = useQuery<{ clients: Client[]; total: number; page: number; pageSize: number }>({
     queryKey: [clientsUrl],
   });
+
+  const clients = data?.clients;
+  const total = data?.total ?? 0;
 
   const handleExport = () => {
     window.location.href = "/api/export";
@@ -103,6 +119,28 @@ export default function Dashboard() {
                   className="pl-9"
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={monthFilter}
+                  onChange={(e) => { setMonthFilter(e.target.value === 'any' ? 'any' : parseInt(e.target.value, 10)); setPage(1); }}
+                  className="border px-2 py-1 rounded"
+                >
+                  <option value="any">Any month</option>
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                    <option key={i} value={i}>{m}</option>
+                  ))}
+                </select>
+                <input type="number" value={yearFilter} onChange={(e) => { setYearFilter(parseInt(e.target.value || '0', 10)); setPage(1); }} className="border px-2 py-1 rounded w-20" />
+                <select value={paidFilter} onChange={(e) => { setPaidFilter(e.target.value as any); setPage(1); }} className="border px-2 py-1 rounded">
+                  <option value="any">Any</option>
+                  <option value="paid">Paid</option>
+                  <option value="unpaid">Unpaid</option>
+                </select>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={outstandingOnly} onChange={(e) => { setOutstandingOnly(e.target.checked); setPage(1); }} />
+                  <span className="text-sm">Outstanding ≥ MK500,000</span>
+                </label>
+              </div>
               <Button variant="outline" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Export CSV
@@ -110,9 +148,18 @@ export default function Dashboard() {
             </div>
             
             <div className="space-y-6">
-              {clients.map((client) => (
+              {clients?.map((client) => (
                 <ClientCard key={client.id} client={client} />
               ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-4">
+              <div className="text-sm text-muted-foreground">{total} clients</div>
+              <div className="flex items-center gap-2">
+                <Button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</Button>
+                <div>Page {page}</div>
+                <Button disabled={page * pageSize >= total} onClick={() => setPage((p) => p + 1)}>Next</Button>
+              </div>
             </div>
           </div>
         )}

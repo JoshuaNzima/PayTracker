@@ -10,8 +10,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/clients", async (req, res) => {
     try {
       const search = req.query.search as string | undefined;
-      const clients = await storage.getClients(search);
-      res.json(clients);
+      // Filters & pagination
+      const month = req.query.month !== undefined ? parseInt(req.query.month as string, 10) : new Date().getMonth();
+      const year = req.query.year !== undefined ? parseInt(req.query.year as string, 10) : new Date().getFullYear();
+      const paidFilter = (req.query.paid as string | undefined) || "any"; // 'paid' | 'unpaid' | 'any'
+      const outstandingMin = req.query.outstandingMin !== undefined ? parseInt(req.query.outstandingMin as string, 10) : undefined;
+
+      const page = req.query.page ? Math.max(1, parseInt(req.query.page as string, 10)) : 1;
+      const pageSize = req.query.pageSize ? Math.max(1, parseInt(req.query.pageSize as string, 10)) : 20;
+
+      const result = await storage.queryClients({
+        search,
+        month,
+        year,
+        paid: paidFilter as any,
+        outstandingMin,
+        page,
+        pageSize,
+      });
+
+      res.json({ clients: result.clients, total: result.total, page, pageSize });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch clients" });
     }
