@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { insertClientSchema, type InsertClient } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 interface AddClientDialogProps {
   open: boolean;
@@ -38,6 +41,7 @@ export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
       monthlyAmount: 0,
       phone: "",
       email: "",
+      startDate: "",
     },
   });
 
@@ -132,6 +136,37 @@ export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
                       data-testid="input-phone"
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Date (Optional)</FormLabel>
+                  <FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full text-left">
+                          {field.value ? new Date(field.value).toLocaleDateString() : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? new Date(field.value) : undefined}
+                          onSelect={(d) => {
+                            if (!d) return;
+                            const date = Array.isArray(d) ? d[0] : d;
+                            field.onChange(date ? date.toISOString() : "");
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

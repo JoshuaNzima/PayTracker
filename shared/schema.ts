@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, boolean, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -10,6 +10,7 @@ export const clients = pgTable("clients", {
   monthlyAmount: integer("monthly_amount").notNull(),
   phone: text("phone"),
   email: text("email"),
+  startDate: timestamp("start_date"),
 });
 
 export const payments = pgTable("payments", {
@@ -38,6 +39,7 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   monthlyAmount: z.number().int().positive().min(1, "Monthly amount must be at least 1"),
   phone: z.string().optional(),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  startDate: z.string().optional().or(z.literal("")),
 });
 
 export const insertPaymentSchema = createInsertSchema(payments).omit({

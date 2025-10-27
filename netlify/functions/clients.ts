@@ -1,5 +1,4 @@
 import { Handler } from "@netlify/functions";
-import { storage } from "../../server/storage";
 import { insertClientSchema } from "../../shared/schema";
 import { z } from "zod";
 
@@ -12,6 +11,21 @@ export const handler: Handler = async (event) => {
 
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 204, headers, body: "" };
+  }
+
+  // Lazy import storage so that missing environment variables (eg. DATABASE_URL)
+  // don't throw at module import time. This lets us return a friendly error
+  // message from the handler and is easier to debug on serverless platforms.
+  let storage: any;
+  try {
+    const mod = await import("../../server/storage");
+    storage = mod.storage;
+  } catch (err) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Server misconfiguration: database not available. Ensure DATABASE_URL is set." }),
+    };
   }
 
   const apiPath = event.path.replace(/^\/.netlify\/functions\/[^/]+/, '');
